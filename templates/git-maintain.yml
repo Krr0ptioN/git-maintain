@@ -1,0 +1,26 @@
+name: Git Maintenance
+
+on:
+  schedule:
+    - cron: "0 5 * * 0" # Every Sunday at 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: Krr0ptioN/git-maintain@v1
+        with:
+          notify-users: your-username # comma-separated, first one is assigned
+          create-issue: "true"
+          step-summary: "true"
+          enable-cruft: "true"
+          # threads: "4"

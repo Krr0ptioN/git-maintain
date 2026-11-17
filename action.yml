@@ -1,0 +1,64 @@
+name: "Git Maintenance"
+description: "Automate Git repository maintenance, repack unreachable objects into cruft packs, format compaction statistics, and notify maintainers."
+author: "Krr0ptioN"
+
+branding:
+  icon: "git-commit"
+  color: "purple"
+
+inputs:
+  notify-users:
+    description: "Comma-separated GitHub usernames to notify in the maintenance report (e.g. 'krr0ption,alice')"
+    required: false
+    default: ""
+  create-issue:
+    description: "Whether to create or update a tracking GitHub issue with the statistics report"
+    required: false
+    default: "true"
+  issue-title:
+    description: "Title of the tracking GitHub issue"
+    required: false
+    default: "🛠️ Git Maintenance Statistics"
+  step-summary:
+    description: "Whether to append the statistics table to GITHUB_STEP_SUMMARY"
+    required: false
+    default: "true"
+  enable-cruft:
+    description: "Whether to pack unreachable objects into a separate cruft pack (--cruft)"
+    required: false
+    default: "true"
+  threads:
+    description: "Number of threads to use for delta compression (default: auto)"
+    required: false
+    default: ""
+  github-token:
+    description: "GitHub token used for creating or commenting on issues"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  report-markdown:
+    description: "The formatted Markdown table report of the maintenance run"
+    value: ${{ steps.maintain.outputs.report_markdown }}
+  total-objects:
+    description: "Total number of objects processed"
+    value: ${{ steps.maintain.outputs.total_objects }}
+  total-cruft:
+    description: "Total number of cruft objects"
+    value: ${{ steps.maintain.outputs.total_cruft }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: maintain
+      shell: bash
+      env:
+        INPUT_NOTIFY_USERS: ${{ inputs.notify-users }}
+        INPUT_CREATE_ISSUE: ${{ inputs.create-issue }}
+        INPUT_ISSUE_TITLE: ${{ inputs.issue-title }}
+        INPUT_STEP_SUMMARY: ${{ inputs.step-summary }}
+        INPUT_ENABLE_CRUFT: ${{ inputs.enable-cruft }}
+        INPUT_THREADS: ${{ inputs.threads }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        bash "${{ github.action_path }}/maintain.sh"
